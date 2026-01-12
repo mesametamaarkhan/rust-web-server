@@ -1,4 +1,7 @@
-use std::net::TcpListener;
+use std::{
+    io::{BufReader, prelude::*}, // get traits and types that let us read and write to stream
+    net::{TcpListener, TcpStream}, // 
+};
 
 fn main() {
     // bind returns new tcp listener instance (binds to a port)
@@ -13,5 +16,24 @@ fn main() {
         let stream = stream.unwrap();
 
         println!("Connection established");
+        handle_connection(stream);
     }
+}
+
+// this function reads data from tcp stream 
+// to see what data is being sent by the browser
+fn handle_connection(mut stream: TcpStream) {
+    // wraps a reference to the stream
+    // this adds buffering by managing calls to the std::io:Read trait methods
+    let buf_reader = BufReader::new(&stream);
+
+    // collecting lines of request in a vector
+    let http_request: Vec<_> = buf_reader
+        .lines()
+        .map(|result| result.unwrap())
+        .take_while(|line| !line.is_empty())
+        .collect();
+
+    println!("Request: {http_request:#?}");
+
 }
