@@ -1,6 +1,7 @@
 use std::{
+    fs, // standard library filesystem
     io::{BufReader, prelude::*}, // get traits and types that let us read and write to stream
-    net::{TcpListener, TcpStream}, // 
+    net::{TcpListener, TcpStream},
 };
 
 fn main() {
@@ -34,8 +35,12 @@ fn handle_connection(mut stream: TcpStream) {
         .take_while(|line| !line.is_empty())
         .collect();
 
+    let status_line = "HTTP/1.1 200 OK";
+    let contents = fs::read_to_string("hello.html").unwrap();
+    let length = contents.len();
+
     // success message data 
-    let response = "HTTP/1.1 200 OK\r\n\r\n";
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
     // write_all takes a &[u8] and sends the bytes directly down the connection
     stream.write_all(response.as_bytes()).unwrap();
